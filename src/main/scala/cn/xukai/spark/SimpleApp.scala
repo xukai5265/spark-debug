@@ -1,7 +1,6 @@
 package cn.xukai.spark
 
 import org.apache.spark.{SparkConf, SparkContext}
-
 /**
   * Created by kaixu on 2017/7/12.
   * step1 . 开启debug 模式
@@ -14,8 +13,9 @@ import org.apache.spark.{SparkConf, SparkContext}
   */
 object SimpleApp {
   def main(args: Array[String]) {
-    val logFile = "file:///root/anaconda-ks.cfg"
-    val conf = new SparkConf().setAppName("simpleApp")
+    val logFile = "hdfs://192.168.107.128:9000/data/aaa"
+    val conf = new SparkConf().setAppName("simpleApp").setJars(Seq("D:\\workspace\\sparkutil\\target\\spark.util-1.0-SNAPSHOT.jar"))
+      .setMaster("spark://192.168.107.128:7077")
     val sc = new SparkContext(conf)
     val logData = sc.textFile(logFile).cache()
     val numAs = logData.filter(line => line.contains("a")).count()
