@@ -1,6 +1,6 @@
-package cn.xukai.spark
+package cn.xukai.spark.sql
 
-import org.apache.spark.sql.{SparkSession}
+import org.apache.spark.sql.SparkSession
 
 /**
  *
@@ -39,7 +39,7 @@ object App {
       2.第二种方法是通过编程接口，允许您构建一个模式，然后将其应用到现有的RDD。
      */
     //使用反射推理模式 rdd -> dataset
-    import ss.implicits._ //很关键  2.0 以前的版本是这样导入的   import spark.implicits._
+    import ss.implicits._
 
     val peopleDF = ss.sparkContext
       .textFile("hdfs://192.168.107.128:9000/data/spark/people.txt")
@@ -51,7 +51,7 @@ object App {
     peopleDF.createOrReplaceTempView("people")
     val teenagersDF = ss.sql("SELECT name, age FROM people WHERE age BETWEEN 13 AND 19")
     teenagersDF.map(teenager => "Name: " + teenager(0)).show()
-    print("is over...")
+    println("is over...")
 
     ss.close()
 

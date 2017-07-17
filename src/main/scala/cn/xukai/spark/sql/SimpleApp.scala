@@ -1,4 +1,4 @@
-package cn.xukai.spark
+package cn.xukai.spark.sql
 
 import org.apache.spark.{SparkConf, SparkContext}
 /**
