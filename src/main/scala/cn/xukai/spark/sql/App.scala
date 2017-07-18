@@ -5,6 +5,7 @@ import org.apache.spark.sql.SparkSession
 /**
  *
  * spark-sql hello world
+  * spark sql : datasets 将rdd 中字段用scheme表示
  */
 
 object App {
