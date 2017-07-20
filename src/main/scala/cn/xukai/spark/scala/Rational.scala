@@ -13,14 +13,20 @@ class Rational(n:Int,d:Int) {
    */
   require(d!=0)
   println("Created "+n +"/" + d)
+
+  /**
+    * 辅助构造器
+    * 理解： 当我们提供的数为整数，就没有必要指定分母。
+    * @param n
+    * @return
+    */
+  def this(n:Int)=this(n,1)
+
   var number = n
   var denom = d
   override def toString: String = n + "/" + d
 
-  def +(that:Rational) =
-  new Rational(
-    number * that.denom + that.number* denom,denom* that.denom
-  )
+  def +(that:Rational) = new Rational(number * that.denom + that.number* denom,denom* that.denom)
 
   def -(that:Rational) = new Rational(number*that.denom-that.number*denom,denom * that.denom)
 
