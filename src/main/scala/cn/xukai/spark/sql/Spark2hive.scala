@@ -14,6 +14,7 @@ object Spark2hive {
   val warehouseLocation = "spark-warehouse"
 
   def main(args: Array[String]): Unit = {
+    new Array[String](3)
     val spark = SparkSession
       .builder()
       .appName("spark hive simple")
