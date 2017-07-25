@@ -353,3 +353,6 @@ Caused by: java.lang.ClassCastException: cannot assign instance of scala.collect
 解决办法：
 需要将jar包 添加到集群中去。
 ss.sparkContext.addJar("D:\\workspace\\sparkutil\\target\\spark.util-1.0-SNAPSHOT.jar")
+
+
+## spark 某商品日交易额统计

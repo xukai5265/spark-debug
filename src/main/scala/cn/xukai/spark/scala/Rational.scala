@@ -1,7 +1,8 @@
 package cn.xukai.spark.scala
 
 /**
-  * Created by kaixu on 2017/7/20.
+  * 有理数函数
+  * 整数转换为分数的计算 =》 结果使用分数表示
   */
 class Rational(n:Int,d:Int) {
   /*
@@ -13,7 +14,9 @@ class Rational(n:Int,d:Int) {
    */
   require(d!=0)
   println("Created "+n +"/" + d)
-
+  private val g =gcd (n.abs,d.abs)
+  var number = n/g
+  var denom = d/g
   /**
     * 辅助构造器
     * 理解： 当我们提供的数为整数，就没有必要指定分母。
@@ -22,15 +25,16 @@ class Rational(n:Int,d:Int) {
     */
   def this(n:Int)=this(n,1)
 
-  var number = n
-  var denom = d
+
   override def toString: String = n + "/" + d
 
-  def +(that:Rational) = new Rational(number * that.denom + that.number* denom,denom* that.denom)
+  def +(that:Rational) = new Rational(number * that.denom + that.number* denom,denom * that.denom)
 
-  def -(that:Rational) = new Rational(number*that.denom-that.number*denom,denom * that.denom)
+  def -(that:Rational) = new Rational(number * that.denom - that.number* denom,denom * that.denom)
 
-  def *(that:Rational) = new Rational(number*that.denom*that.number*denom,denom * that.denom)
+  def *(that:Rational) = new Rational( number * that.number, denom * that.denom)
 
-  def /(that:Rational) = new Rational(number*that.number*that.denom * denom,denom * that.number)
+  def /(that:Rational) = new Rational( number * that.denom, denom * that.number)
+
+  private def gcd(a:Int,b:Int):Int = if(b==0) a else gcd(b, a % b)
 }
