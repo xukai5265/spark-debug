@@ -12,8 +12,7 @@ import scala.util.Random
   * Created by kaixu on 2017/8/1.
   */
 object KafkaProducer extends App{
-  private val users = Array("A","B","C","D","E","F","G","H","I","G","K"
-  ,"L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z")
+  private val users = Array("ZHANGSAN","LISI","WANGWU","ZHAOLIU","FENGWU")
   private val random = new Random()
 
   //设置消费金额
@@ -23,7 +22,7 @@ object KafkaProducer extends App{
   //获取用户名
   def getUserName():String={
     var name :String = ""
-    name+=users(random.nextInt(users.length))+users(random.nextInt(users.length))
+    name+=users(random.nextInt(users.length))
     name
   }
   //kafka参数

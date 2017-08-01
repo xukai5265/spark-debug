@@ -1,7 +1,7 @@
 package cn.xukai.spark.streaming
 
 import kafka.serializer.StringDecoder
-import org.apache.log4j.Level
+import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkConf
 import org.apache.spark.streaming.kafka.KafkaUtils
 import org.apache.spark.streaming.{Seconds, StreamingContext}
@@ -31,13 +31,13 @@ object KafkaDirect0821 {
       System.exit(1)
     }
 
-    StreamingExamples.setStreamingLogLevels(Level.WARN)
+    Logger.getLogger("org.apache.spark").setLevel(Level.WARN)
 
     val Array(brokers, topics) = args
 
     // Create context with 2 second batch interval
     val sparkConf = new SparkConf().setAppName("DirectKafkaWordCount")
-    val ssc = new StreamingContext(sparkConf, Seconds(2))
+    val ssc = new StreamingContext(sparkConf, Seconds(10))
     // Create direct kafka stream with brokers and topics
     val topicsSet = topics.split(",").toSet
     val kafkaParams = Map[String, String]("metadata.broker.list" -> brokers)
