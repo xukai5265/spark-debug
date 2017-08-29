@@ -18,4 +18,8 @@ class Demo1 {
     else
       b
   }
+  def main(args: Array[String]): Unit = {
+
+  }
+
 }

@@ -27,6 +27,7 @@ object KafkaProducer extends App{
   }
   //kafka参数
   val topic = "user_payment"
+//  val topic = "offset_topic"
   val brokers = "192.168.107.128:9092"
   val props = new Properties()
   props.put("metadata.broker.list", brokers)
@@ -44,6 +45,6 @@ object KafkaProducer extends App{
     println("Message sent: " + event)
 
     //每隔200ms发送一条数据
-    Thread.sleep(200)
+    Thread.sleep(2000)
   }
 }
