@@ -20,6 +20,7 @@ object TestNaiveBayes extends App{
   val sentenceDataFrame =  sc.textFile("file:///application/spark-2.2.0-bin-hadoop2.7/examples/jars/sougou").map {
     x =>
       val data = x.split(",")
+      data.init
       RawDataRecord(data(0).toInt, data(1))
   }
   import spark.implicits._

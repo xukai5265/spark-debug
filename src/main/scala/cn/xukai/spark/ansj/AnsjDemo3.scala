@@ -1,10 +1,6 @@
 package cn.xukai.spark.ansj
-
-import java.util
-
-import cn.xukai.spark.ansj.AnsjDemo2.stopRecognition1
 import org.ansj.recognition.impl.StopRecognition
-import org.ansj.splitWord.analysis.{BaseAnalysis, ToAnalysis}
+import org.ansj.splitWord.analysis.{BaseAnalysis}
 
 import scala.io.Source
 
