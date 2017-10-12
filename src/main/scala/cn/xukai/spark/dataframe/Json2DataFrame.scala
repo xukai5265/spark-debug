@@ -26,6 +26,7 @@ object Json2DataFrame {
     parquetDF.show()
     // 将结果保存到csv 文件
     parquetDF.write.option("header","true").csv("file:/D:/spark/warehouse/demo3.csv")
+    parquetDF.write.json("file:/D:/spark/warehouse/demo1.json")
   }
 
   /**
