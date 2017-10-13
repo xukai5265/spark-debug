@@ -24,13 +24,20 @@ object AnsjUtils {
   //去除标点符号
   stopRecognition1.insertStopNatures("w")
 
-  val outFile = new PrintWriter("trainData.txt")
+  val testData = new PrintWriter("testData.txt")
+  val trainData = new PrintWriter("trainData.txt")
   def getFC(obj: BaiduNewsResult): Unit = {
     val words = BaseAnalysis.parse(obj.getContent).recognition(stopRecognition1).toStringWithOutNature(" ")
     println(words)
     // 写入文件中
-    outFile.write(obj.getLabel+","+words)
-    outFile.write("\n")
-    outFile.flush()
+    if(obj.getLabel == null){
+      testData.write(words)
+      testData.write("\n")
+      testData.flush()
+    }else{
+      trainData.write(obj.getLabel+","+words)
+      trainData.write("\n")
+      trainData.flush()
+    }
   }
 }
