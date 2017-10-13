@@ -127,9 +127,6 @@ public class JDBCHelper {
     public static void main(String[] args) throws SQLException {
         List<BaiduNewsResult> baiduNewsResults = JDBCHelper.query("select * from test");
         for(BaiduNewsResult baiduNewsResult :baiduNewsResults){
-            if(StringUtils.isBlank(baiduNewsResult.getLabel())){
-                continue;
-            }
             AnsjUtils.getFC(baiduNewsResult);
         }
     }

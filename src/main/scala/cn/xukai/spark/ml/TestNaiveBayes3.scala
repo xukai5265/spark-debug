@@ -2,9 +2,9 @@ package cn.xukai.spark.ml
 
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.ml.classification.NaiveBayes
+import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
 import org.apache.spark.ml.feature.{HashingTF, IDF, LabeledPoint, Tokenizer}
 import org.apache.spark.ml.linalg.Vector
-import org.apache.spark.ml.linalg.Vectors
 import org.apache.spark.sql.{Row, SparkSession}
 
 /**
@@ -15,76 +15,84 @@ import org.apache.spark.sql.{Row, SparkSession}
   * NaiveBayes
   */
 object TestNaiveBayes3 extends App{
-
-  case class RawDataRecord(label: Int, text: String)
+  case class RawDataRecord(category: String, text: String)
   Logger.getLogger("org.apache.spark").setLevel(Level.WARN)
   val spark = SparkSession.builder().master("local[3]").appName("TestNaiveBayes3").getOrCreate()
   val sc = spark.sparkContext
-  val sentenceDataFrame =  sc.textFile("trainData.txt").map {
+  var srcRDD = sc.textFile("trainData.txt").map{
     x =>
-      val data = x.split(",")
-      data.init
-      RawDataRecord(data(0).toInt, data(1))
+      var data = x.split(",")
+      RawDataRecord(data(0),data(1))
   }
   import spark.implicits._
-  val srcRDD = sentenceDataFrame.toDF()
-  //70%作为训练数据，30%作为测试数据
-  val splits = srcRDD.randomSplit(Array(0.7, 0.3))
-  var trainingDF = splits(0).toDF()
-  var testDF = splits(1).toDF()
-  println("srcRDD: "+srcRDD.count()+" trainingDF: "+trainingDF.count() )
+  val trainingData= srcRDD.toDF()
   //将词语转换成数组
   var tokenizer = new Tokenizer().setInputCol("text").setOutputCol("words")
-  var wordsData = tokenizer.transform(trainingDF)
+  var wordsData = tokenizer.transform(trainingData)
   println("output1：")
-  wordsData.select($"label",$"text",$"words").take(1)
+  wordsData.select($"category",$"text",$"words").show(1)
+
   //计算每个词在文档中的词频
   var hashingTF = new HashingTF().setNumFeatures(500000).setInputCol("words").setOutputCol("rawFeatures")
   var featurizedData = hashingTF.transform(wordsData)
   println("output2：")
-  featurizedData.select($"label", $"words", $"rawFeatures").take(1)
+  featurizedData.select($"category", $"words", $"rawFeatures").show(1)
 
   //计算每个词的TF-IDF
   var idf = new IDF().setInputCol("rawFeatures").setOutputCol("features")
   var idfModel = idf.fit(featurizedData)
   var rescaledData = idfModel.transform(featurizedData)
   println("output3：")
-  rescaledData.select($"label", $"features").show(1)
+  rescaledData.select($"category", $"features").show(1)
 
-  //转换成Bayes的输入格式
-//  var trainDataRdd = rescaledData.select($"label",$"features").map {
-//    case Row(label: String, features: Vector) =>
-//      LabeledPoint(label.toDouble, Vectors.dense(features.toArray))
-//  }
-
-
-  var trainDataRdd = rescaledData.select($"label",$"features").map {
-    case Row(label: String, features: Vector) =>
-      LabeledPoint(label.toDouble, Vectors.dense(features.toArray))
+  println("output4: ")
+  var trainDataRdd = rescaledData.select($"category",$"features").map {
+    case Row(label: String, features: Vector) => LabeledPoint(label.toDouble,features)
   }
+  val Array(trainingData1, testData) = trainDataRdd.randomSplit(Array(0.7, 0.3), seed = 1234L)
+  trainDataRdd.show(1)
+  val bayes = new NaiveBayes()
+  val bayesModel = bayes.fit(trainingData1)
 
-  println("output4：")
-  trainDataRdd.take(1)
+  val predictions = bayesModel.transform(testData)
+  println("output5: ")
+  predictions.show(10)
+
+
+  val evaluator = new MulticlassClassificationEvaluator()
+    .setLabelCol("label")
+    .setPredictionCol("prediction")
+    .setMetricName("accuracy")
+  val accuracy = evaluator.evaluate(predictions)
+  println("Test set accuracy = " + accuracy)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//
 //  //训练模型
-  NaiveBayes.load("")
-  val model = NaiveBayes.train(trainDataRdd.rdd, lambda = 1.0, modelType = "multinomial")
-//
-//  //测试数据集，做同样的特征表示及格式转换
-//  var testwordsData = tokenizer.transform(testDF)
-//  var testfeaturizedData = hashingTF.transform(testwordsData)
-//  var testrescaledData = idfModel.transform(testfeaturizedData)
-//  var testDataRdd = testrescaledData.select($"label",$"features").map {
-//    case Row(label: String, features: Vector) =>
-//      LabeledPoint(label.toDouble, Vectors.dense(features.toArray))
+//  val model = NaiveBayes.train(parsedData, lambda = 1.0, modelType = "multinomial")
+
+  //  val parsedData =  sc.textFile("trainData.txt").map {
+//    line =>
+//      val parts = line.split(",")
+//      LabeledPoint(parts(0).toDouble,Vectors.dense(parts(1).split(' ').map(_.toDouble)))
 //  }
-//
-//  //对测试数据集使用训练模型进行分类预测
-//  val testpredictionAndLabel = testDataRdd.map(p => (model.predict(p.features), p.label))
-//
-//  //统计分类准确率
-//  var testaccuracy = 1.0 * testpredictionAndLabel.filter(x => x._1 == x._2).count() / testDataRdd.count()
-//  println("output5：")
-//  println(testaccuracy)
+//  val training = parsedData
+//  //获得训练模型,第一个参数为数据，第二个参数为平滑参数，默认为1，可改变
+//  val model =NaiveBayes.train(training,lambda = 1.0,modelType = "multinomial")
 
 
 

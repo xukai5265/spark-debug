@@ -2,7 +2,7 @@ package cn.xukai.spark.ml
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.ml.Pipeline
 import org.apache.spark.ml.classification.NaiveBayes
-import org.apache.spark.ml.feature.{HashingTF, IDF, RegexTokenizer, Tokenizer}
+import org.apache.spark.ml.feature.{HashingTF, IDF, Tokenizer}
 import org.apache.spark.sql.SparkSession
 /**
   * Created by kaixu on 2017/8/28.
@@ -15,9 +15,9 @@ object TestNaiveBayes extends App{
 
   case class RawDataRecord(label: Int, text: String)
   Logger.getLogger("org.apache.spark").setLevel(Level.WARN)
-  val spark = SparkSession.builder().master("spark://192.168.107.128:7077").appName("TokenizeDemo").getOrCreate()
+  val spark = SparkSession.builder().master("local[*]").appName("TokenizeDemo").getOrCreate()
   val sc = spark.sparkContext
-  val sentenceDataFrame =  sc.textFile("file:///application/spark-2.2.0-bin-hadoop2.7/examples/jars/sougou").map {
+  val sentenceDataFrame =  sc.textFile("D:\\资料\\语料\\sougou-train").map {
     x =>
       val data = x.split(",")
       data.init
@@ -38,7 +38,7 @@ object TestNaiveBayes extends App{
   val pipeline = new Pipeline()
     .setStages(Array(tokenizer, hashingtf, idf, bayesModel))
   val lrModel = pipeline.fit(trainingDF)
-  println(lrModel.toString())
+  lrModel.write.overwrite().save("spark-bayes-model")
   // 预测
   println("预测...")
   val test = spark.createDataset(Seq("世界 何种 优秀 产品 条 亘古 变 真理 木 秀 林 风 摧 天 车 市 例子 3 月末 刚刚 上市 广 汽 本田 冠 道 240 turbo 上市 外界 动力 质疑 马 拉 车 声音 真 事实 组 数据 反驳 上市 短短 三 月 冠 道 240 turbo 冠 道 全 系 达成 订单 5 辆 壮举 7 月 冠 道 全 系 销量 7500 辆 难 想象 款 刚刚 上市 中 大型 豪华 suv 成绩 佳绩 质疑 动力 性能 消费者 蒙蔽 理智 可言 答案 自然 否定 市场 认可 足以 证明 冠 道 240 turbo 优秀",
@@ -49,5 +49,4 @@ object TestNaiveBayes extends App{
   predictions.show(2)
   //持久化 dataset
 //  predictions.write.format("json").save("file:///application/spark-2.2.0-bin-hadoop2.7/examples/jars/sougoures1")
-
 }

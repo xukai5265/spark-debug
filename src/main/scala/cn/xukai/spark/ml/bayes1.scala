@@ -32,7 +32,7 @@ object bayes1 extends App{
   val nbTrained = NaiveBayes.train(allData)
 
   // 待分类的特征集合
-  val txt = "6 130 8";
+  val txt = "6 130 8"
   val vec = Vectors.dense(txt.split(' ').map(_.toDouble))
 
   // 预测（分类）
