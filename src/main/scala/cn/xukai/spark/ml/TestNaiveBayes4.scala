@@ -54,4 +54,5 @@ object TestNaiveBayes4 extends App{
   println("output4: ")
   predictions.show(10,false)
 
+
 }
