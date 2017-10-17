@@ -2,7 +2,6 @@ package cn.xukai.spark.kafka
 
 import java.util.Properties
 
-import cn.xukai.spark.kafka.KafkaProducer.{producer, topic}
 import kafka.producer.{KeyedMessage, Producer, ProducerConfig}
 
 /**
@@ -16,11 +15,18 @@ object KafkaProduceUtil {
   props.put("serializer.class", "kafka.serializer.StringEncoder")
   val kafkaConfig = new ProducerConfig(props)
   val producer = new Producer[String, String](kafkaConfig)
-  def write2kafka(offset:String,topic:String):Unit={
-    producer.send(new KeyedMessage[String, String](topic, offset))
+
+  /**
+    * 写数据到 kafka
+    * @param topic
+    * @param message
+    */
+  def write2kafka(topic:String,message:String):Unit={
+    producer.send(new KeyedMessage[String, String](topic, message))
+    producer.close()
   }
 
   def main(args: Array[String]): Unit = {
-    write2kafka("a","offset_topic");
+    write2kafka("xk1","hello world - 6")
   }
 }
