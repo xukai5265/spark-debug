@@ -1,6 +1,4 @@
 package cn.xukai.spark.ml
-
-import cn.xukai.spark.ml.TestNaiveBayes3.{predictions, _}
 import org.apache.spark.SparkConf
 import org.apache.spark.ml.classification.NaiveBayes
 import org.apache.spark.ml.feature.{HashingTF, IDF, LabeledPoint, Tokenizer}
@@ -23,11 +21,13 @@ object TestNaiveBayes4 extends App{
       val data = x.split(",")
       RawDataRecord(data(0),data(1))
   }
+
   import spark.implicits._
   val trainingData = srcData.toDF()
   //将词语转换成数组
   var tokenizer = new Tokenizer().setInputCol("text").setOutputCol("words")
   var wordsData = tokenizer.transform(trainingData)
+
   println("output1：")
   wordsData.select($"category",$"text").show(1,false)
   wordsData.select($"category",$"words").show(1,false)
@@ -49,10 +49,34 @@ object TestNaiveBayes4 extends App{
     case Row(label: String, features: Vector) => LabeledPoint(label.toDouble,features)
   }
   val bayes = new NaiveBayes()
-  val bayesModel = bayes.fit(trainDataRdd)
-  val predictions = bayesModel.transform(trainDataRdd)
+  //获取测试数据
+  val testData = spark.sparkContext.textFile("file:/D:/spark/warehouse/testData.txt");
+  val testingData = testData.toDF("text")
+  var wordsTestData = tokenizer.transform(testingData)
+
   println("output4: ")
-  predictions.show(10,false)
+  wordsTestData.select($"text").show(1,false)
+  wordsTestData.select($"words").show(1,false)
+
+  var testFeaturizedData = hashingTF.transform(wordsTestData)
+  println("output5：")
+  testFeaturizedData.select($"words").show(1,false)
+  testFeaturizedData.select($"rawFeatures").show(1,false)
+
+  var testIdfModel = idf.fit(testFeaturizedData)
+  var testRescaledData = idfModel.transform(testFeaturizedData)
+  println("output6：")
+  rescaledData.select($"features").show(1,false)
+
+
+
+  val bayesModel = bayes.fit(trainDataRdd)
+  bayesModel.setPredictionCol("category")
+  val predictions = bayesModel.transform(testRescaledData)
+  println("output7：")
+  predictions.printSchema()
+  predictions.select($"text",$"rawPrediction",$"probability",$"category").show(20,false)
+
 
 
 }

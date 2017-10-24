@@ -1,8 +1,12 @@
 package cn.xukai.spark.ml
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.ml.classification.NaiveBayes
+import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
 import org.apache.spark.ml.feature.{HashingTF, IDF, LabeledPoint, Tokenizer}
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.types.DoubleType
+import org.apache.spark.sql.{Row, SparkSession}
+
+import scala.collection.Map
 
 /**
   * Created by kaixu on 2017/8/28.
@@ -17,8 +21,8 @@ object SougouNB extends App{
   Logger.getLogger("org.apache.spark").setLevel(Level.WARN)
   val spark = SparkSession.builder().master("local[*]").appName("TokenizeDemo").getOrCreate()
   val sc = spark.sparkContext
-  //  file:/D:/spark/warehouse/trainData.txt
-  val sentenceDataFrame =  sc.textFile("D:\\资料\\语料\\sougou-train").map {
+  //   D:\资料\语料\sougou-train
+  val sentenceDataFrame =  sc.textFile("file:/D:/spark/warehouse/trainData.txt").map {
     x =>
       val data = x.split(",")
       data.init
@@ -50,33 +54,71 @@ object SougouNB extends App{
   val Array(trainingData, testData) = trainDataRdd.randomSplit(Array(0.7, 0.3), seed = 1234L)
   val nb = new NaiveBayes()
   val nbModel = nb.fit(trainingData)
+
+  // testData 中正值数量为：
+  val simple_positive = testData.filter($"label"===1.0).count()
+  // testData 中负值数量为：
+  val simple_negative = testData.filter($"label"===0.0).count()
   val predictions = nbModel.transform(testData)
-  // 准确率
+  val tp = predictions.filter($"label"===$"prediction").filter($"label"===1.0).count()
+  println("tp --->"+tp)  // 106
+  val testCount = testData.count()
+  println("testCount--->"+testCount)
+  /**精确率*/
+  val percision = 1.0 * tp / testCount
+  println("percision ---> "+percision)
+  /**召回率*/
+  val recall = 1.0 * tp / simple_positive
+  println("recall ---> "+recall)
+  /**准确率*/
   val accuracy = 1.0*predictions.filter($"label"===$"prediction").count()/testData.count()
   println("accuracy-->"+accuracy)
-  /**
-    * 精确率
-    */
-  // 把正类 预测为正类
-  val tp = predictions.filter($"label"===$"prediction").filter($"label"===1.0).count()
-  println("tp==="+tp)
-  // 把负类 预测为正类
-  val fp = predictions.filter($"prediction"===1.0).filter($"label"===0.0).count()
-  println("fp==="+fp)
-  val precision = 1.0 * tp / (tp + fp)
-  println("precision-->"+precision)
-  /**
-    * 召回率
-    */
-  // 把原来的正类预测为负类
-  val FN = predictions.filter($"prediction"===0.0).filter($"label"===1.0).count()
-  println("FN ==="+FN)
-  val recall = 1.0 * tp / (tp+ FN)
-  println("recall ---> "+recall)
 
-  predictions.printSchema()
-  predictions.show(10,false)
-  //将rdd 结果 保存到文件
-//  predictions.select($"label",$"rawPrediction",$"probability",$"prediction").rdd.repartition(1).saveAsTextFile("D:\\spark\\warehouse\\features")
+  val evaluator_accuracy = new MulticlassClassificationEvaluator()
+    .setLabelCol("label")
+    .setPredictionCol("prediction")
+    .setMetricName("accuracy")
+  val accuracy_spark = evaluator_accuracy.evaluate(predictions)
+  println("Test set accuracy_spark = " + accuracy_spark)
 
+  val evaluator_precision = new MulticlassClassificationEvaluator()
+    .setLabelCol("label")
+    .setPredictionCol("prediction")
+    .setMetricName("weightedPrecision")
+  val precision_spark = evaluator_precision.evaluate(predictions)
+  println("Test set weightedPrecision_spark = " + precision_spark)
+
+  val evaluator_recall = new MulticlassClassificationEvaluator()
+    .setLabelCol("label")
+    .setPredictionCol("prediction")
+    .setMetricName("weightedRecall")
+  val recall_spark = evaluator_recall.evaluate(predictions)
+  println("Test set weightedRecall_spark = " + recall_spark)
+
+  val evaluator_f1 = new MulticlassClassificationEvaluator()
+    .setLabelCol("label")
+    .setPredictionCol("prediction")
+    .setMetricName("f1")
+  val f1_spark = evaluator_f1.evaluate(predictions)
+  println("Test set f1_spark = " + f1_spark)
+
+  val predictionAndLabels =
+    predictions.select($"prediction", $"label".cast(DoubleType)).rdd.map {
+      case Row(prediction: Double, label: Double) => (prediction, label)
+    }
+  println(predictionAndLabels.collect().size)
+  // 统计预测值 白话：预测正面：数量   预测负面：数量
+  val tpByClass: Map[Double, Int] = predictionAndLabels.map{
+    case(prediction, label)=>
+      (label,if (label==prediction) 1 else 0)
+  }.reduceByKey(_ + _)
+    .collectAsMap()
+
+  println(tpByClass)
+  val tpSum = tpByClass.values.sum.toDouble
+  println("tpSum:"+tpSum)
+
+  val labelCountByClass: Map[Double, Long] = predictionAndLabels.values.countByValue()
+  println(labelCountByClass)
+  println("labelCountByClass.values.sum:"+labelCountByClass.values.sum)
 }

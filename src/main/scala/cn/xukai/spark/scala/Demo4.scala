@@ -1,17 +1,17 @@
 package cn.xukai.spark.scala
 
-import cn.xukai.spark.java.Demo
+import cn.xukai.spark.java.SystemDemo
 
 /**
   * Created by kaixu on 2017/8/2.
   * scala 调用java 代码，返回null值的处理
   */
 object Demo4 extends App{
-  val res = Demo.getElements("aaaa")
-  println(res)
-  if(res==null){
-    println("is null")
-  }
+//  val res = SystemDemo.getElements("aaaa")
+//  println(res)
+//  if(res==null){
+//    println("is null")
+//  }
 
 
   var floatVar = 3.14

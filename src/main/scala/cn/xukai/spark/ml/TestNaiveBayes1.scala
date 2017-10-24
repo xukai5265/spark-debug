@@ -14,9 +14,9 @@ object TestNaiveBayes1 {
     Vectors.dense(1)
     Logger.getLogger("org.apache.spark").setLevel(Level.WARN)
     val conf =new SparkConf()
-    conf.setMaster("spark://192.168.107.128:7077").setAppName("TestNaiveBayes")
+    conf.setMaster("local[*]").setAppName("TestNaiveBayes")
     val sc =new SparkContext(conf)
-    val parsedData = sc.textFile("file:///application/spark-2.2.0-bin-hadoop2.7/examples/jars/sougou").map {
+    val parsedData = sc.textFile("D:\\资料\\语料\\sougou-train").map {
       x =>
         val data = x.split(",")
         LabeledPoint(data(0).toDouble,Vectors.dense(data(1).split(' ').map(_.toDouble)))

@@ -25,7 +25,7 @@ object TestNaiveBayes extends App{
   }
   import spark.implicits._
   val srcRDD = sentenceDataFrame.toDF()
-  val splits = srcRDD.randomSplit(Array(0.7, 0.3))
+  val splits = srcRDD.randomSplit(Array(0.7, 0.3),11L)
   var trainingDF = splits(0).toDF()
   var testDF = splits(1).toDF()
   println("srcRDD: "+srcRDD.count()+" trainingDF: "+trainingDF.count() + " testDF: "+ testDF.count())

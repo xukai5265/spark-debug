@@ -1,13 +1,9 @@
 package cn.xukai.spark.ansj;
 
-import org.ansj.domain.Result;
-import org.ansj.library.StopLibrary;
 import org.ansj.recognition.impl.StopRecognition;
-import org.ansj.splitWord.analysis.BaseAnalysis;
-import org.ansj.splitWord.analysis.NlpAnalysis;
 import org.ansj.splitWord.analysis.ToAnalysis;
 
-import java.io.*;
+import java.io.FileNotFoundException;
 
 /**
  * Created by kaixu on 2017/8/23.
