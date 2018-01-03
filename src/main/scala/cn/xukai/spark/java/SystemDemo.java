@@ -17,6 +17,10 @@ public class SystemDemo {
     }
 
     public static void main(String[] args) {
+        System.out.println(System.nanoTime());
+        System.out.println(System.currentTimeMillis());
+
+
         SystemDemo systemDemo = new SystemDemo();
 
         systemDemo.createTest("name", new CallbackAction() {

@@ -103,6 +103,7 @@
             <descriptorRef>jar-with-dependencies</descriptorRef>
           </descriptorRefs>
         </configuration>
+        <version>2.6</version>
       </plugin>
       <!-- the Maven compiler plugin will compile Java source files -->
       <plugin>
