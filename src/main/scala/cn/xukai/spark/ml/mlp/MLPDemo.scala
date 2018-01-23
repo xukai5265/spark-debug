@@ -10,7 +10,9 @@ import scala.collection.mutable.ArrayBuffer
 
 /**
   * 多层感知 - 文本分类器
-  * 本文参考地址： https://www.ibm.com/developerworks/cn/opensource/os-cn-spark-practice6/
+  * 本文参考地址：
+  *   代码：https://www.ibm.com/developerworks/cn/opensource/os-cn-spark-practice6/
+  *   神经网络介绍：http://blog.csdn.net/aws3217150/article/details/46316007
   * Created by kaixu on 2018/1/23.
   */
 object MLPDemo extends App{
