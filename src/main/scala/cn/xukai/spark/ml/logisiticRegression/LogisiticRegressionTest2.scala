@@ -4,6 +4,7 @@ import org.apache.spark.ml.Pipeline
 import org.apache.spark.ml.classification.LogisticRegression
 import org.apache.spark.ml.evaluation.BinaryClassificationEvaluator
 import org.apache.spark.ml.feature.{OneHotEncoder, StringIndexer, VectorAssembler}
+import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.types.DoubleType
 
@@ -118,6 +119,7 @@ object LogisiticRegressionTest2 {
 
     // 实例化逻辑回归算法
     val lr = new LogisticRegression()
+    println("LogisticRegression parameters:\n" + lr.explainParams() + "\n")
 
     // 将特征算法按顺序进行合并，形成一个算法数组
     val transformers = Array(indexer,
@@ -134,8 +136,19 @@ object LogisiticRegressionTest2 {
                               loanEncoder,
                               vectorAssembler,
                               indexerY,lr)
+    println("\n迭代测试==========>\n")
+
+
+    val paramMap = ParamMap(lr.maxIter -> 20)
+      .put(lr.maxIter, 100) // Specify 1 Param. This overwrites the original maxIter.
+      .put(lr.threshold -> 0.4) // 阈值
+      .put(lr.regParam -> 0.0) // 正则化
+
+
     // 将算法数组和逻辑回归算法合并，传入pipeline 对象的stages中，然后用作于训练数据，训练模型
     var model = new Pipeline().setStages(transformers).fit(training)
+
+    LogisticRegression.load("")
     println("model stages ...")
     model.stages.foreach{ x =>
       println(x.getClass)
@@ -144,10 +157,16 @@ object LogisiticRegressionTest2 {
     var result = model.transform(test)
     //显示测试结果集中的真实值、预测值、原始值、百分比字段
     result.select("label", "prediction","rawPrediction","probability").show(10,false)
+
+//    result.select("label","prediction","probability").write.format("json").save("D:\\test_data\\spark\\output\\lr\\prob")
     //创建二分类算法评估器，对测试结果进行评估
     val evaluator = new BinaryClassificationEvaluator()
+
     var aucTraining = evaluator.evaluate(result)
+
     println("aucTraining = "+aucTraining)
+
+
     spark.close()
   }
 }

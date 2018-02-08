@@ -45,7 +45,8 @@ public class ParquetDemo {
      * @throws IOException
      */
     static void parquetWriter(String outPath,String inPath) throws IOException {
-        MessageType schema = MessageTypeParser.parseMessageType("message Pair {\n" +
+        MessageType schema = MessageTypeParser.parseMessageType(
+                 " message Pair {\n" +
                         " required binary city (UTF8);\n" +
                         " required binary ip (UTF8);\n" +
                         " repeated group time {\n"+

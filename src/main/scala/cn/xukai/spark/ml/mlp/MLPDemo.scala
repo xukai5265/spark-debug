@@ -4,27 +4,38 @@ import org.apache.spark.ml.Pipeline
 import org.apache.spark.ml.classification.MultilayerPerceptronClassifier
 import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
 import org.apache.spark.ml.feature.{IndexToString, StopWordsRemover, StringIndexer, Word2Vec}
+import org.apache.spark.mllib.evaluation.MulticlassMetrics
 import org.apache.spark.sql.SparkSession
 
 import scala.collection.mutable.ArrayBuffer
 
 /**
   * 多层感知 - 文本分类器
-  * 本文参考地址：
+  * 一、本文参考地址：
   *   代码：https://www.ibm.com/developerworks/cn/opensource/os-cn-spark-practice6/
   *   神经网络介绍：http://blog.csdn.net/aws3217150/article/details/46316007
+  * 二、Spark 的多层感知器分类器 (MultilayerPerceptronClassifer) 支持以下可调参数:
+      1. featuresCol:输入数据 DataFrame 中指标特征列的名称。
+      2. labelCol：输入数据 DataFrame 中标签列的名称。
+      3. layers:这个参数是一个整型数组类型，第一个元素需要和特征向量的维度相等，最后一个元素需要训练数据的标签取值个数相等，如 2 分类问题就写 2。中间的元素有多少个就代表神经网络有多少个隐层，元素的取值代表了该层的神经元的个数。例如val layers = Array[Int](100,6,5,2)。
+      4. maxIter：优化算法求解的最大迭代次数。默认值是 100。
+      5. predictionCol:预测结果的列名称。
+      6. tol:优化算法迭代求解过程的收敛阀值。默认值是 1e-4。不能为负数。
+      7. blockSize:该参数被前馈网络训练器用来将训练样本数据的每个分区都按照 blockSize 大小分成不同组，并且每个组内的每个样本都会被叠加成一个向量，以便于在各种优化算法间传递。该参数的推荐值是 10-1000，默认值是 128。
+     三、算法的返回是一个 MultilayerPerceptronClassificationModel 类实例。
   * Created by kaixu on 2018/1/23.
   */
 object MLPDemo extends App{
   final val VECTOR_SIZE = 3000
-  val array = new ArrayBuffer[String]()
+  val array = new ArrayBuffer[String](1894)
   val spark = SparkSession.builder().master("local[*]").appName("Word2VecDemo").getOrCreate()
   val sc = spark.sparkContext
   import spark.implicits._
   sc.setLogLevel("OFF")
   val srcRDD =  sc.textFile("trainData.txt")
-  sc.textFile("stopword.txt").map(line => array+=(line))
+  sc.textFile("stopword.txt",1).map(line => array+=(line)).collect()
   val stopwords = array.toArray
+  println("停词数量："+stopwords.size)
   val dataDF = srcRDD.map {
     x =>
       val data = x.split(",")
@@ -66,7 +77,8 @@ object MLPDemo extends App{
   val predictionResultDF = model.transform(testData)
   //below 2 lines are for debug use
   predictionResultDF.printSchema
-  predictionResultDF.select("text","label","predictedLabel").show(30)
+  predictionResultDF.select("text","label","predictedLabel","filtered","features").show(30,false)
+  predictionResultDF.select("text","label","predictedLabel","filtered","features").repartition(1).write.format("json").save("mlp")
 
   val evaluator = new MulticlassClassificationEvaluator()
     .setLabelCol("indexedLabel")
@@ -74,6 +86,48 @@ object MLPDemo extends App{
     .setMetricName("accuracy")
   val predictionAccuracy = evaluator.evaluate(predictionResultDF)
   println("Testing Accuracy is %2.4f".format(predictionAccuracy * 100) + "%")
+  predictionResultDF.select("label","predictedLabel").take(1).map{ line =>
+    println(line.get(0).getClass)
+    println(line.get(1).getClass)
+  }
+
+  val metrics = new MulticlassMetrics(predictionResultDF.select("label","predictedLabel").rdd.map(x => (x.getInt(0).toDouble,x.getString(1).toDouble)))
+  // Confusion matrix
+  println("Confusion matrix:")
+  println(metrics.confusionMatrix)
+
+
+  // Overall Statistics
+  val accuracy = metrics.accuracy
+  println("Summary Statistics")
+  println(s"Accuracy = $accuracy")
+
+  // Precision by label
+  val labels = metrics.labels
+  labels.foreach { l =>
+    println(s"Precision($l) = " + metrics.precision(l))
+  }
+
+  // Recall by label
+  labels.foreach { l =>
+    println(s"Recall($l) = " + metrics.recall(l))
+  }
+
+  // False positive rate by label
+  labels.foreach { l =>
+    println(s"FPR($l) = " + metrics.falsePositiveRate(l))
+  }
+
+  // F-measure by label
+  labels.foreach { l =>
+    println(s"F1-Score($l) = " + metrics.fMeasure(l))
+  }
+
+  // Weighted stats
+  println(s"Weighted precision: ${metrics.weightedPrecision}")
+  println(s"Weighted recall: ${metrics.weightedRecall}")
+  println(s"Weighted F1 score: ${metrics.weightedFMeasure}")
+  println(s"Weighted false positive rate: ${metrics.weightedFalsePositiveRate}")
   spark.stop
 
 }

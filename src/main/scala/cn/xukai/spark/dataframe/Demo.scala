@@ -7,6 +7,21 @@ import org.apache.spark.sql.{DataFrame, Row, SparkSession}
   * Created by kaixu on 2017/10/12.
   */
 object Demo {
+  case class CustomerAddressData(ca_address_sk: Long,
+                                 ca_address_id: String,
+                                 ca_street_number: String,
+                                 ca_street_name: String,
+                                 ca_street_type: String,
+                                 ca_suite_number: String,
+                                 ca_city: String,
+                                 ca_county: String,
+                                 ca_state: String,
+                                 ca_zip: String,
+                                 ca_country: String,
+                                 ca_gmt_offset: Double,
+                                 ca_location_type: String
+                                )
+
   def main(args: Array[String]): Unit = {
     val conf = new SparkConf().setMaster("local[2]")
     conf.set("spark.sql.warehouse.dir", "file:/D:/spark/warehouse")
@@ -15,7 +30,6 @@ object Demo {
       .config(conf).getOrCreate()
     //通过代码的方式,设置Spark log4j的级别
     sparkSession.sparkContext.setLogLevel("WARN")
-    import sparkSession.implicits._
     //使用 case class 转换 RDD 到 DataFrame
     val peopleDF = rddToDFCase(sparkSession)
 //    val peopleDF = rddToDfStructType(sparkSession)

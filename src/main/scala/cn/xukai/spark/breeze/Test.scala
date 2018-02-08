@@ -1,11 +1,13 @@
-//package cn.xukai.spark.ml
-//import breeze.linalg.{DenseMatrix => BDM, DenseVector => BDV, linspace}
+//package cn.xukai.spark.breeze
+//
+//import breeze.linalg.{linspace, DenseMatrix => BDM, DenseVector => BDV}
 //import breeze.plot._
 //
 ///**
-//  * Created by kaixu on 2017/10/23.
+//  * Created by kaixu on 2018/1/5.
+//  * 画图演示工具
 //  */
-//object BreezeVizTest {
+//object Test {
 //  def main(args: Array[String]) {
 //    val a = new BDV[Int](1 to 3 toArray)
 //    val b = new BDM[Int](3, 3, 1 to 9 toArray)
@@ -17,16 +19,16 @@
 //    p += plot(x, x :^ 3.0, '.')
 //    p.xlabel = "x axis"
 //    p.ylabel = "y axis"
-//    f.saveas("D:\\spark\\breeze-image\\lines.png")
+//    f.saveas("d:\\lines.png")
 //
 //    val p2 = f.subplot(2, 1, 1)
 //    val g = breeze.stats.distributions.Gaussian(0, 1)
 //    p2 += hist(g.sample(100000), 1000)
 //    p2.title = "A normal distribution"
-//    f.saveas("D:\\spark\\breeze-image\\subplots.png")
+//    f.saveas("d:\\subplots.png")
 //
 //    val f2 = Figure()
 //    f2.subplot(0) += image(BDM.rand(200, 200))
-//    f2.saveas("D:\\spark\\breeze-image\\image.png")
+//    f2.saveas("d:\\image.png")
 //  }
 //}
