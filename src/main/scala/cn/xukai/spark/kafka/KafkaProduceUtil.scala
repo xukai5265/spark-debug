@@ -23,7 +23,7 @@ object KafkaProduceUtil {
     */
   def write2kafka(topic:String,message:String):Unit={
     producer.send(new KeyedMessage[String, String](topic, message))
-    producer.close()
+//    producer.close()
   }
 
   def main(args: Array[String]): Unit = {
