@@ -23,5 +23,8 @@ object TaskDemo {
 
     val data = sc.textFile("hdfs://tianxi-ha/test/t1/test")
     println(data.partitions.length)
+//    val data1 = data.repartition(100)
+//    println(data1.partitions.length)
+    data.foreach(x => println(x))
   }
 }

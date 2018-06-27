@@ -18,6 +18,5 @@ object Rdd2JDBC extends App{
     val stmt:sql.Statement = conn.createStatement()
     stmt.execute(s"insert into rddDemo values('${x}')")
   }
-
   spark.close()
 }

@@ -14,8 +14,8 @@ object RddDemo {
       .getOrCreate()
     spark.sparkContext.addJar("D:\\workspace\\sparkutil\\target\\spark.util-1.0-SNAPSHOT.jar")
     val sparkContext = spark.sparkContext
-    sparkContext.objectFile("")
     val dataRdd = sparkContext.textFile("hdfs://192.168.107.128:9000/data/aaa")
+    dataRdd.repartition(1)
     val flatMapRdd = dataRdd.flatMap(_.split(" "))
     val d1 = flatMapRdd.map(word => (word, 1))
     //    val d2 = d1.reduceByKey(_+_)
